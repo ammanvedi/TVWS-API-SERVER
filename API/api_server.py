@@ -7,12 +7,17 @@ from Processing import ProcessingTask
 
 class DataUploadHandler(tornado.web.RequestHandler):
     def post(self):
+        print "file uploaded"
+        print self.get_argument('file6.name')
+        print self.get_argument('file6.path')
+        print "--------------\n"
 
 api = tornado.web.Application([
-    (r"/measurements/upload", DataUploadHandler)
+    (r"/upload", DataUploadHandler)
 
 ])
 
 if __name__ == "__main__":
+    print "listening on 4000"
     api.listen(4000)
     tornado.ioloop.IOLoop.instance().start()
