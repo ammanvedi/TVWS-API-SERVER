@@ -3,6 +3,6 @@ from Data_prep import GenerateChannelReadings
 
 app = Celery('ProcessingTask', broker='amqp://guest@localhost//')
 
-@app.task
+@app.task(name='processingtask')
 def Process(inpath, outpath):
     GenerateChannelReadings.processdata(inpath, outpath)
