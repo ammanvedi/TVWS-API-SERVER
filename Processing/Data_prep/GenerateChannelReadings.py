@@ -63,7 +63,7 @@ class ReadingsParser:
 	def __init__(self, minimumpower, minimumdistance):
 		self.MIN_POWER = minimumpower
 		self.MIN_DISTANCE = minimumdistance
-		self.RegionID = RegionSelector(os.environ["APISERVERDIRECTORY"] + "/Processing/Data_prep/meta/ITURegionCountries.json", os.environ["APISERVERDIRECTORY"] + "/Processing/Data_prep/meta/countries.geo.json", os.environ["APISERVERDIRECTORY"] + "/Processing/Data_prep/meta/channelallocations.json")
+		self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
 
 	def determineBands(self, rawdatas):
 		range = list()
