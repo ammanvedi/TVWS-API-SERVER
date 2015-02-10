@@ -11,7 +11,7 @@ class DataUploadHandler(tornado.web.RequestHandler):
         print self.get_argument('file6.name')
         print self.get_argument('file6.path')
         print "--------Adding file to rabbitmq------\n"
-        ProcessingTask.Process(self.get_argument('file6.path'), "./WorkerResults/" + self.get_argument('file6.name'))
+        ProcessingTask.Process(self.get_argument('file6.path'), os.environ["APISERVERDIRECTORY"] + "/Processing/WorkerResults/" + self.get_argument('file6.name'))
 
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler)
