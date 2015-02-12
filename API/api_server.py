@@ -2,6 +2,7 @@ import sys
 import os
 import tornado.ioloop
 import tornado.web
+sys.path.append("/srv/TVWSAPI/TVWS-API-SERVER")
 from Processing import ProcessingTask
 
 class DataUploadHandler(tornado.web.RequestHandler):
