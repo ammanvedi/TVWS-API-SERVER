@@ -2,7 +2,6 @@ import sys
 import os
 import tornado.ioloop
 import tornado.web
-sys.path.append(os.environ["APISERVERDIRECTORY"])
 from Processing import ProcessingTask
 
 class DataUploadHandler(tornado.web.RequestHandler):
