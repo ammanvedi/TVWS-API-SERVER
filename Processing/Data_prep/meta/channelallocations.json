@@ -4,6 +4,7 @@
     "subregions": [
       {
         "Type": "DEFAULT",
+        "AppliesToRegions":[152],
         "Channels": [
           {
             "ChannelNumber": 2,
@@ -354,6 +355,7 @@
     "subregions": [
       {
         "type": "DEFAULT",
+        "AppliesToRegions":[74,1, 219],
         "Channels": [
           {
             "ChannelNumber": 21,

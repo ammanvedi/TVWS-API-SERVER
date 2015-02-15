@@ -1,3 +1,3 @@
 from ProcessingTask import Process
 
-Process.delay("./Data_prep/inputs/manhattan-1.json", "./WorkerResults/manhattan.json")
+Process.delay("./Data_prep/inputs/Scan.rfs", "./WorkerResults/moscow.json", 0, "xxx-sss-ssss")

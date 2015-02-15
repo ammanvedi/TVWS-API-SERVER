@@ -4,14 +4,13 @@ import tornado.ioloop
 import tornado.web
 sys.path.append("/srv/TVWSAPI/TVWS-API-SERVER")
 from Processing import ProcessingTask
+import time
 
 class DataUploadHandler(tornado.web.RequestHandler):
     def post(self):
         print "file uploaded"
-        print self.get_argument('file6.name')
-        print self.get_argument('file6.path')
         print "--------Adding file to rabbitmq------\n"
-        ProcessingTask.Process.delay(self.get_argument('file6.path'), "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/WorkerResults/" + self.get_argument('file6.name'))
+        ProcessingTask.Process.delay(self.get_argument('file6.path'), "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/WorkerResults/" + self.get_argument('file6.name'), 0, str(time.time()))
 
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler)
