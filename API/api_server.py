@@ -10,7 +10,10 @@ class DataUploadHandler(tornado.web.RequestHandler):
     def post(self):
         print "file uploaded"
         print "--------Adding file to rabbitmq------\n"
-        ProcessingTask.Process.delay(self.get_argument('file6.path'), "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/WorkerResults/" + self.get_argument('file6.name'), 0, str(time.time()))
+        trackingid = str(time.time())
+        ProcessingTask.Process.delay(self.get_argument('file6.path'), "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/WorkerResults/" + self.get_argument('file6.name'), 0, trackingid)
+        response = {'trackingid' : trackingid }
+        self.write(response)
 
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler)
