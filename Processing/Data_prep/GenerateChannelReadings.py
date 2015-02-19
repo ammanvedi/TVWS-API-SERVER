@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import sys
 import os
@@ -6,6 +7,7 @@ from shapely.geometry import shape, Point
 sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/")
 import psycopg2
 from ProcessNotifier import Notifier
+import re
 
 
 '''
@@ -109,6 +111,8 @@ class ReadingsParser:
 	MIN_DISTANCE = 30
 	RegionID = None
 	N = None
+	ERRORSTATUS = 0
+	TRACKID = None
 
 	def __init__(self, minimumpower, minimumdistance, user, tracker):
 		#ADD TRACK RECORD HERE!!
@@ -116,8 +120,9 @@ class ReadingsParser:
 		self.MIN_DISTANCE = minimumdistance
 		self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
 		#self.RegionID = RegionSelector("/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/countries.geo.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/channelallocations.json")
-		N = Notifier(self.RegionID.getConnection())
-		N.addTrackRecord(user, tracker)
+		self.N = Notifier(self.RegionID.getConnection())
+		self.TRACKID = tracker
+		self.N.addTrackRecord(user, tracker)
 
 	def determineBands(self, rawdatas):
 		range = list()
@@ -146,17 +151,33 @@ class ReadingsParser:
 		self.DATA_FILE = filename
 		res = []
 		json_file = open(self.DATA_FILE)
-		data = json.load(json_file)
-		self.BAND_LOWER_FREQ = self.determineBands(data)
-		spectrum = data[1]["Spectrum"]
-		print "INFO : combining readings for "+ filename+ " across valid bands..."
-		for ts, loc in data[1]["Location"].iteritems():
-			data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
-			if self.farther_than(self.MIN_DISTANCE, res, data_point):
-				data_point["Spectrum"] = self.get_ranges(spectrum[ts])
-				res.append(data_point)
-		print "INFO : finished compiling combined readings for " +  filename
-		return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res}
+		try:
+			data = json.load(json_file)
+		except ValueError, e:
+			self.ERRORSTATUS = 1
+			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file does not constitute valid JSON.")
+			return {'FAILED' : 'JSON validation failed'}
+		#strip the string of spaces and newlines
+		filestring = json.dumps(data)
+		filestring = re.sub("\n", "", filestring)
+		filestring = filestring.replace(" ", "")
+		testresult = re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S)
+		if testresult != None:
+			self.BAND_LOWER_FREQ = self.determineBands(data)
+			spectrum = data[1]["Spectrum"]
+			print "INFO : combining readings for "+ filename+ " across valid bands..."
+			for ts, loc in data[1]["Location"].iteritems():
+				data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
+				if self.farther_than(self.MIN_DISTANCE, res, data_point):
+					data_point["Spectrum"] = self.get_ranges(spectrum[ts])
+					res.append(data_point)
+			print "INFO : finished compiling combined readings for " +  filename
+			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res}
+		else:
+			#use notifier to inform user of error
+			self.ERRORSTATUS = 1
+			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file has incorrect format. Check documentation for valid formats.")
+			return {'FAILED' : 'regular expression validator failed'}
 
 	def get_ranges(self, spectrum):
 		res = []
@@ -199,7 +220,12 @@ class ReadingsParser:
 def processdata(inf, outf, userid, trackhash):
 	gen = ReadingsParser(47,30, userid, trackhash)
 	gen.printToJSON(outf,gen.Generate(inf))
-	print "INFO : finished processing data"
+	if(gen.ERRORSTATUS):
+		print "INFO (ERROR): processing returned an error"
+		return 1;
+	else:
+		print "INFO : finished processing data, without error"
+		return 0;
 
 def testreg():
 	reg = RegionSelector("./meta/ITURegionCountries.json", "./meta/countries.geo.json", "./meta/channelallocations.json")

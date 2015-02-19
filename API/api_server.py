@@ -5,6 +5,8 @@ import tornado.web
 sys.path.append("/srv/TVWSAPI/TVWS-API-SERVER")
 from Processing import ProcessingTask
 import time
+sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/")
+import psycopg2
 
 class DataUploadHandler(tornado.web.RequestHandler):
     def post(self):

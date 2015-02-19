@@ -22,6 +22,15 @@ class Notifier:
             print "INFO (ERROR) : failed to create track record"
             print e.pgerror
 
+    def updateTrackRecordError(self, TrackHash, ErrorMessage):
+        try:
+            self.dbcursor.execute('UPDATE "ProcessTracking" SET ("CompletedOn", "error", "message") = (' + ' ' + 'to_timestamp(' + str(int(time.time())) + '),1,\'' + ErrorMessage + '\') WHERE "TrackHash" = \'' + TrackHash + '\';')
+            print "INFO  : updated tracker to signify error"
+        except psycopg2.Error, e:
+            print "INFO (ERROR) : failed updating track record to signify error"
+            print e.pgerror
+        self.dbconnection.commit()
+
     def updateTrackRecordFinished(self, TrackHash, datasetid):
         try:
             self.dbcursor.execute('UPDATE "ProcessTracking" SET ("DatasetID", "CompletedOn", "Completed") = (' + str(datasetid) + ', ' + 'to_timestamp(' + str(int(time.time())) + '),1) WHERE "TrackHash" = \'' + TrackHash + '\';')
