@@ -23,6 +23,6 @@ api = tornado.web.Application([
 ])
 
 if __name__ == "__main__":
-    print "listening on 4000"
+    sys.stdout.write("listening on 4000\n")
     api.listen(4000)
     tornado.ioloop.IOLoop.instance().start()
