@@ -18,6 +18,7 @@ class DataUploadHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
     def post(self):
+        self.set_default_headers()
         print "file uploaded"
         print "--------Adding file to rabbitmq------\n"
         trackingid = str(time.time())
@@ -31,6 +32,7 @@ class TrackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, trackid):
+        self.set_default_headers()
         res = yield tornado.gen.Task(psqlHelper.getUploadStatus, str(trackid))
         self.write(str(res))
         self.finish()
@@ -41,6 +43,7 @@ class DatasetByIDHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, dsid):
+        self.set_default_headers()
         res = yield tornado.gen.Task(psqlHelper.getDatasetMetadata, str(dsid))
         self.write(str(res))
         self.finish()
@@ -51,6 +54,7 @@ class DatasetReadingsByIDHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, dsid):
+        self.set_default_headers()
         res = yield tornado.gen.Task(psqlHelper.getDatasetReadings, str(dsid))
         self.write(str(res))
         self.finish()
