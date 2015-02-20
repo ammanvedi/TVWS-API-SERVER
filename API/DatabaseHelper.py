@@ -41,7 +41,10 @@ class DBHelper:
             self.dbpool.putconn(con)
 
     def datetimeToTimestampString(self, dt):
-        return str(dt.strftime("%s"))
+        if dt == None:
+            return None
+        else:
+            return str(dt.strftime("%s"))
 
     #select "Timestamp", "ChannelID", "CombinedPower", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat" from "ReadingDataset" LEFT JOIN "ChannelReading" ON ("ReadingDataset"."ChannelReadingID" = "ChannelReading"."ChannelReadingID") where "ReadingDataset"."DatasetID" = 8 ORDER BY "ChannelID";
     def getDatasetReadings(self, dsid, callback):
