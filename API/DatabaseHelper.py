@@ -88,6 +88,7 @@ class DBHelper:
                         callback(json.dumps({"QueryError" : "Unexpected : Multiple Track Records Found"}))
                     elif cur.rowcount == 1:
                         for record in cur:
+                            print record
                             callback(json.dumps({"DatasetID" : record[0], "CompletedOn" : self.datetimeToTimestampString(record[1]), "StartedOn" : self.datetimeToTimestampString(record[2]), "Completed" : record[3], "Error": record[4], "Message" : record[5]}))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
