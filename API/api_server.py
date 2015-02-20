@@ -15,6 +15,8 @@ import json
 psqlHelper = DBHelper();
 
 class DataUploadHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
     def post(self):
         print "file uploaded"
         print "--------Adding file to rabbitmq------\n"
@@ -24,6 +26,8 @@ class DataUploadHandler(tornado.web.RequestHandler):
         self.write(response)
 
 class TrackHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, trackid):
@@ -32,6 +36,8 @@ class TrackHandler(tornado.web.RequestHandler):
         self.finish()
 
 class DatasetByIDHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, dsid):
@@ -40,6 +46,8 @@ class DatasetByIDHandler(tornado.web.RequestHandler):
         self.finish()
 
 class DatasetReadingsByIDHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
     @tornado.web.asynchronous
     @gen.coroutine
     def get(self, dsid):
