@@ -59,11 +59,48 @@ class DatasetReadingsByIDHandler(tornado.web.RequestHandler):
         self.write(str(res))
         self.finish()
 
+class DatasetsByLatLongHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self, lon, lat):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.getDatasetsNear, str(lon), str(lat))
+        self.write(str(res))
+        self.finish()
+
+class ChannelsByLatLong(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self, lon, lat):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.getChannelsForLocation, str(lon), str(lat))
+        self.write(str(res))
+        self.finish()
+
+class ChannelsByID(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self, cid):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.getChannel, str(cid))
+        self.write(str(res))
+        self.finish()
+
+
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler),
     (r"/measurements/track/([0-9]+\.[0-9]+)", TrackHandler),
     (r"/datasets/([0-9]+)/meta", DatasetByIDHandler),
-    (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler)
+    (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler),
+    (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", DatasetsByLatLongHandler),
+    (r"/channels/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", ChannelsByLatLong),
+    (r"/channels/([0-9]+)", ChannelsByID)
 
 ])
 

@@ -3,6 +3,9 @@ import json
 class ReadingSet():
     Channels = {}
 
+    def __init__(self):
+        self.Channels = {}
+
     def addChannelReading(self, cid, dataobject):
         if cid in self.Channels:
             #is in add reading to array
