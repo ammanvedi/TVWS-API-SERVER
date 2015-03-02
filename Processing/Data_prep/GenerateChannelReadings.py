@@ -187,6 +187,7 @@ class ReadingsParser:
 			combined = 0.0
 			for val in freqsinrange:
 				combined += (self.MIN_POWER + spectrum[val])
+			combined = (combined/len(freqsinrange))
 			res.append(combined)
 		return res
 
