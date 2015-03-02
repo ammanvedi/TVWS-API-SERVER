@@ -118,8 +118,8 @@ class ReadingsParser:
 		#ADD TRACK RECORD HERE!!
 		self.MIN_POWER = minimumpower
 		self.MIN_DISTANCE = minimumdistance
-		#self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
-		self.RegionID = RegionSelector("/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/countries.geo.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/channelallocations.json")
+		self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
+		#self.RegionID = RegionSelector("/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/countries.geo.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/channelallocations.json")
 		self.N = Notifier(self.RegionID.getConnection())
 		self.TRACKID = tracker
 		self.N.addTrackRecord(user, tracker)
@@ -188,7 +188,6 @@ class ReadingsParser:
 			for val in freqsinrange:
 				combined += (spectrum[val])
 			combined = (combined/len(freqsinrange))
-			print combined
 			res.append(combined)
 		return res
 
