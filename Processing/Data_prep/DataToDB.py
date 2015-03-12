@@ -69,7 +69,7 @@ class databaseStore:
         print " | end time                     : " + "to_timestamp(" + str(EndTime) + ")"
         print " | timezone ID                  : " + str(TIMEZONEID)
         print "INFO : creating dataset entry and linking readings to dataset"
-        self.addDataset(CR_DB_IDS, 0, CHANNELCOUNT, DATAPOINTCOUNT, DATECREATED, StartTime, EndTime, AVGPOINT["LAT"], AVGPOINT["LON"], TIMEZONEID)
+        self.addDataset(CR_DB_IDS, self.UID, CHANNELCOUNT, DATAPOINTCOUNT, DATECREATED, StartTime, EndTime, AVGPOINT["LAT"], AVGPOINT["LON"], TIMEZONEID)
         print "INFO : committing all additions to database"
         #UPDATE TRACKER HERE (FINISHED)
         #get the id of the dataset just added, and update tracker
