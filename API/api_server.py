@@ -116,6 +116,17 @@ class LoginHandler(tornado.web.RequestHandler):
         self.write(str(res))
         self.finish()
 
+class UserDatasetsHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self, uid):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.getDatasetsForUser, uid)
+        self.write(str(res))
+        self.finish()
+
 
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler),
@@ -126,12 +137,8 @@ api = tornado.web.Application([
     (r"/channels/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", ChannelsByLatLong),
     (r"/channels/([0-9]+)", ChannelsByID),
     (r"/register", RegisterHandler),
-    #todo
     (r"/login", LoginHandler),
-    #(r"/user/([0-9]+)/datasets", UserDatasetsHandler)
-
-
-
+    (r"/user/([0-9]+)/datasets", UserDatasetsHandler)
 ])
 
 if __name__ == "__main__":

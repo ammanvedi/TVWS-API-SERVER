@@ -63,6 +63,21 @@ class DBHelper:
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
 
+    #select "Timestamp", "ChannelID", "CombinedPower", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat" from "ReadingDataset" LEFT JOIN "ChannelReading" ON ("ReadingDataset"."ChannelReadingID" = "ChannelReading"."ChannelReadingID") where "ReadingDataset"."DatasetID" = 8 ORDER BY "ChannelID";
+    def getDatasetsForUser(self, uid, callback):
+        resobj = []
+        with self.getcursor() as cur:
+            try:
+                cur.execute('select "DatasetID", "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X("Datasets".geom), ST_Y("Datasets".geom), "tzid" from "Datasets" LEFT JOIN timezones on ("Datasets"."Timezone" = timezones."gid") where "UserID" = ' + uid)
+                if cur.rowcount == 0:
+                    callback(json.dumps({"QueryError" : "Unexpected : No Datasets for User"}))
+                else:
+                    for record in cur:
+                        resobj.append({"DatasetID" : record[0], "userID": record[1], "DateCreated": self.datetimeToTimestampString(record[2]), "StartTime": self.datetimeToTimestampString(record[3]), "EndTime": self.datetimeToTimestampString(record[4]), "DataPointCount": record[5], "ChannelCount": record[6], "Lon": record[7], "Lat": record[8], "Placename" : record[9]})
+                    callback(json.dumps(resobj))
+            except psycopg2.Error, e:
+                callback(json.dumps({"QueryError" : e.pgerror }))
+
     #select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat"  from "Datasets" where "DatasetID" = '8';
     def getDatasetMetadata(self, dsid, callback):
         with self.getcursor() as cur:
