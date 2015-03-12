@@ -92,6 +92,28 @@ class ChannelsByID(tornado.web.RequestHandler):
         self.write(str(res))
         self.finish()
 
+class RegisterHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def post(self):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.registerUser, str(self.get_argument('email')), str(self.get_argument('password')), str(self.get_argument('sname')) , str(self.get_argument('fname')) )
+        self.write(str(res))
+        self.finish()
+
+class LoginHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def post(self):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.basicAuthUser, str(self.get_argument('uname')), str(self.get_argument('pword')))
+        self.write(str(res))
+        self.finish()
+
 
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler),
@@ -100,7 +122,13 @@ api = tornado.web.Application([
     (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler),
     (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", DatasetsByLatLongHandler),
     (r"/channels/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", ChannelsByLatLong),
-    (r"/channels/([0-9]+)", ChannelsByID)
+    (r"/channels/([0-9]+)", ChannelsByID),
+    (r"/register", RegisterHandler),
+    #todo
+    (r"/login", LoginHandler),
+    #(r"/user/([0-9]+)/datasets", UserDatasetsHandler)
+
+
 
 ])
 

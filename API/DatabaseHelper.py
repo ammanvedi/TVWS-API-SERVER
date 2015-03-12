@@ -19,6 +19,8 @@ import tornado.concurrent
 import concurrent.futures
 import json
 from APIResponseObjects import ReadingSet
+import uuid
+import hashlib
 
 
 
@@ -159,15 +161,97 @@ class DBHelper:
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
 
+    def getLastInsertedID(self):
+        cur.execute("SELECT LASTVAL();")
+        return cur.fetchone()[0]
 
-    def testq(self, callback):
-        res = []
+    #def loginUser(self, username, password):
+
+
+    def registerUser(self, email, password, fname, sname, callback):
+        #generate a random hash from uuid 
+        uuidgen = str(uuid.uuid1())
+        print uuidgen
+        hashed = hashlib.sha512(password + str(uuidgen)).hexdigest()
         with self.getcursor() as cur:
-            cur.execute("select * from \"ProcessTracking\"")
-            for record in cur:
-                res.append(record)
-            print "time end of query " + str(time.time())
-            callback(res)
+            try:
+                print ('INSERT INTO "Users" ("Email", "Fname", "Sname", "PasswordHash", "GUID", "Location") VALUES (\'{0}\', \'{1}\', \'{2}\',\'{3}\', \'{4}\', \'none\')').format(email, fname, sname, hashed, uuidgen)
+                cur.execute(('INSERT INTO "Users" ("Email", "Fname", "Sname", "PasswordHash", "GUID", "Location") VALUES (\'{0}\', \'{1}\', \'{2}\',\'{3}\', \'{4}\', \'none\')').format(email, fname, sname, hashed, uuidgen))
+                callback(json.dumps({"QueryStatus" : "Success, should try login" }))
+                cur.connection.commit()
+            except psycopg2.Error, e:
+                callback(json.dumps({"QueryError" : e.pgerror }))
 
-    def testp(self, callback):
-        callback("sdsdsdsd")
+    def createUserToken(self, userid):
+        with self.getcursor() as cur:
+            try:
+                cur.execute(('SELECT * FROM tokens WHERE "UserID" = \'{0}\'').format(userid))
+                if(cur.rowcount == 1):
+                    for record in cur:
+                        print record
+                        return {"Token" : record[1]}
+                else:
+                    #should gen a new token
+                    uuidgen = str(uuid.uuid1())
+                    try:
+                        cur.execute(('INSERT INTO tokens ("UserID", "Token") VALUES (\'{0}\', \'{1}\')').format(userid, uuidgen))
+                        cur.connection.commit()
+                        return {"Token" : uuidgen}
+                    except psycopg2.Error, e:
+                        return {"QueryError" : e.pgerror }                              
+            except psycopg2.Error, e:
+                return {"QueryError" : e.pgerror }
+
+    def logoutUser(self, Token):
+        with self.getcursor() as cur:
+            try:
+                cur.execute(('DELETE FROM tokens WHERE "Token" = \'{0}\'').format(Token))
+                cur.connection.commit()
+                return {"Token" : "Deleted"}
+            except psycopg2.Error, e:
+                return {"QueryError" : e.pgerror}     
+
+    def checkUserToken(self, Token):
+        with self.getcursor() as cur:
+            try:
+                cur.execute(('SELECT * FROM tokens WHERE "Token" = \'{0}\'').format(Token))
+                if(cur.rowcount == 1):
+                    return {"Token" : "VALID"}
+                else:
+                    return {"Token" : "INVALID"}
+            except psycopg2.Error, e:
+                return {"QueryError" : e.pgerror}
+
+    def basicAuthUser(self, username, passw, callback):
+        uuidgen = str(uuid.uuid1())
+        print uuidgen
+        hashed = hashlib.sha512(passw + str(uuidgen)).hexdigest()
+        with self.getcursor() as cur:
+            try:
+                cur.execute(('SELECT * FROM "Users" WHERE "Email" = \'{0}\'').format(username))
+                if(cur.rowcount == 1):
+                    for record in cur:
+                        print record
+                        if(hashlib.sha512(passw + record[6]).hexdigest() == record[5]):
+                            #create and return token
+                            print "success"
+                            tkn = self.createUserToken(record[0])
+                            if(hasattr(tkn, "QueryError")):
+                                callback(json.dumps(tkn))
+                            else:
+                                #token is valid
+                                print "tkn is "
+                                print tkn
+                                callback(json.dumps({"Token" : tkn["Token"], "UserID" : record[0], "Email" : record[1], "ForeName" : record[3], "Surname" : record[2]}))
+                        else:
+                            callback(json.dumps({"QueryError" : "Username Or Password Incorrect" }))
+                else:
+                    callback(json.dumps({"QueryError" : "Username Or Password Incorrect" }))
+            except psycopg2.Error, e:
+                callback(json.dumps({"QueryError" : e.pgerror }))
+
+
+
+
+
+
