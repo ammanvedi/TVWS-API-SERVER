@@ -2,6 +2,8 @@ import sys
 import os
 import tornado.ioloop
 import tornado.web
+import tornado.httpserver
+import os.path
 from tornado import gen
 sys.path.append("/srv/TVWSAPI/TVWS-API-SERVER")
 sys.path.append("/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python")
@@ -142,6 +144,20 @@ api = tornado.web.Application([
 ])
 
 if __name__ == "__main__":
-    sys.stdout.write("listening on 4000\n")
-    api.listen(4000)
-    tornado.ioloop.IOLoop.instance().start()
+    if (os.path.exists("/home/ammanvedi/cert/ssl.crt")):
+        print "found ssl cert, using SSL"
+        http_server = tornado.httpserver.HTTPServer(api, ssl_options={ "certfile": "/home/ammanvedi/cert/ssl.crt", "keyfile": "/home/ammanvedi/cert/private.key"}) 
+        sys.stdout.write("listening on 4000\n")
+        http_server.listen(4000) 
+        tornado.ioloop.IOLoop.instance().start()
+    else:
+        print "not using SSL"
+        api.listen(4000)
+        tornado.ioloop.IOLoop.instance().start()
+
+
+
+
+
+
+
