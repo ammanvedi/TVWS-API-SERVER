@@ -13,6 +13,7 @@ sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib
 import psycopg2
 from DatabaseHelper import DBHelper
 import json
+import ssl
 
 psqlHelper = DBHelper();
 
