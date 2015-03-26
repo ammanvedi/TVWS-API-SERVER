@@ -148,7 +148,7 @@ if __name__ == "__main__":
         print "found ssl cert, using SSL"
         http_server = tornado.httpserver.HTTPServer(api, ssl_options={ "certfile": "/home/ammanvedi/cert/ssl.crt", "keyfile": "/home/ammanvedi/cert/private.key", "ca_certs": "/home/ammanvedi/cert/ca.pem"}) 
         sys.stdout.write("listening on 4000\n")
-        http_server.listen(4000) 
+        http_server.listen(443) 
         tornado.ioloop.IOLoop.instance().start()
     else:
         print "not using SSL"
