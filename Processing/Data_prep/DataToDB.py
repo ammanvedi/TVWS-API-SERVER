@@ -69,7 +69,7 @@ class databaseStore:
         print " | end time                     : " + "to_timestamp(" + str(EndTime) + ")"
         print " | timezone ID                  : " + str(TIMEZONEID)
         print "INFO : creating dataset entry and linking readings to dataset"
-        self.addDataset(CR_DB_IDS, self.UID, CHANNELCOUNT, DATAPOINTCOUNT, DATECREATED, StartTime, EndTime, AVGPOINT["LAT"], AVGPOINT["LON"], TIMEZONEID)
+        self.addDataset(CR_DB_IDS, self.UID, CHANNELCOUNT, DATAPOINTCOUNT, DATECREATED, StartTime, EndTime, AVGPOINT["LAT"], AVGPOINT["LON"], TIMEZONEID, JSONFILE['minf'], JSONFILE['maxf'])
         print "INFO : committing all additions to database"
         #UPDATE TRACKER HERE (FINISHED)
         #get the id of the dataset just added, and update tracker
@@ -82,10 +82,10 @@ class databaseStore:
         #print 'INSERT INTO "ChannelReading" ("ChannelID", "CombinedPower", geom, "Timestamp") VALUES ('+ ChannelID +','+ CombinedPower +', ST_GeometryFromText(\'POINT(' + lon + ' ' +  lat + ')\',4326), to_timestamp(' + Time +  '));'
         #self.connection.commit()
 
-    def addDataset(self, CRIDlist, uid, cc, dpc, dc, st, et, aplat, aplon, tz):
+    def addDataset(self, CRIDlist, uid, cc, dpc, dc, st, et, aplat, aplon, tz, minf, maxf):
         #print 'INSERT INTO "Datasets" ("ChannelCount", "DataPointCount", "DateCreated", "EndTime", geom, "StartTime", "Timezone", "UserID") VALUES ( ' + str(cc) + ', ' + str(dpc) + ', ' + 'to_timestamp(' + str(int(dc)) + ')' + ', ' + 'to_timestamp(' + str(et) + ')' + ', ' + 'ST_GeometryFromText(\'POINT(' + str(aplon) + ' ' +  str(aplat) + ')\',4326)' + ', ' + 'to_timestamp(' + str(st) + ')' + ', ' + str(tz) + ', ' + str(uid) + ');'
         try:
-            self.dbcursor.execute('INSERT INTO "Datasets" ("ChannelCount", "DataPointCount", "DateCreated", "EndTime", geom, "StartTime", "Timezone", "UserID") VALUES ( ' + str(cc) + ', ' + str(dpc) + ', ' + 'to_timestamp(' + str(int(dc)) + ')' + ', ' + 'to_timestamp(' + str(et) + ')' + ', ' + 'ST_GeometryFromText(\'POINT(' + str(aplon) + ' ' +  str(aplat) + ')\',4326)' + ', ' + 'to_timestamp(' + str(st) + ')' + ', ' + str(tz) + ', ' + str(uid) + ');')
+            self.dbcursor.execute('INSERT INTO "Datasets" ("ChannelCount", "DataPointCount", "DateCreated", "EndTime", geom, "StartTime", "Timezone", "UserID", "LowestFrequency", "HighestFrequency") VALUES ( ' + str(cc) + ', ' + str(dpc) + ', ' + 'to_timestamp(' + str(int(dc)) + ')' + ', ' + 'to_timestamp(' + str(et) + ')' + ', ' + 'ST_GeometryFromText(\'POINT(' + str(aplon) + ' ' +  str(aplat) + ')\',4326)' + ', ' + 'to_timestamp(' + str(st) + ')' + ', ' + str(tz) + ', ' + str(uid) + ', ' +  str(minf)+ ', ' + str(maxf) +  ');')
             dsid = self.getLastInsertedID()
             for crid in CRIDlist:
                 self.relateDStoCR(dsid, crid)

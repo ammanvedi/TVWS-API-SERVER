@@ -77,9 +77,9 @@ class DatasetsByLatLongHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Origin", "*")
     @tornado.web.asynchronous
     @gen.coroutine
-    def get(self, lon, lat):
+    def get(self, lon, lat, radius):
         self.set_default_headers()
-        res = yield tornado.gen.Task(psqlHelper.getDatasetsNear, str(lon), str(lat))
+        res = yield tornado.gen.Task(psqlHelper.getDatasetsNear, str(lon), str(lat), str(radius))
         self.write(str(res))
         self.finish()
 
@@ -144,7 +144,7 @@ api = tornado.web.Application([
     (r"/upload/track/([0-9]+\.[0-9]+)", TrackHandler),
     (r"/datasets/([0-9]+)/meta", DatasetByIDHandler),
     (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler),
-    (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", DatasetsByLatLongHandler),
+    (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)/([0-9]+)", DatasetsByLatLongHandler),
     (r"/channels/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)", ChannelsByLatLong),
     (r"/channels/([0-9]+)", ChannelsByID),
     (r"/register", RegisterHandler),

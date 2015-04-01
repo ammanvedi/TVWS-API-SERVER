@@ -21,16 +21,7 @@ class RegionSelector:
 	dbcursor = None
 	connection = None
 
-	def __init__(self, ITUcountriesfile, Worldcountriesfile, ITUregionsfile):
-		ITU_C_O = open(ITUcountriesfile)
-		self.ITU_COUNTRIES = json.load(ITU_C_O)
-		ITU_C_O.close()
-		WORLD_C_F = open(Worldcountriesfile)
-		self.WORLD_COUNTRIES = json.load(WORLD_C_F)
-		WORLD_C_F.close()
-		ITU_R_F = open(ITUregionsfile)
-		self.ITU_REGION = json.load(ITU_R_F)
-		ITU_R_F.close()
+	def __init__(self):
 		conn_string = "host='localhost' dbname='TVWS' user='ammanvedi' password=''"
 		print "INFO : connecting to database	-> ( " + conn_string + ")"
 		self.connection = psycopg2.connect(conn_string)
@@ -118,8 +109,8 @@ class ReadingsParser:
 		#ADD TRACK RECORD HERE!!
 		self.MIN_POWER = minimumpower
 		self.MIN_DISTANCE = minimumdistance
-		self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
-		#self.RegionID = RegionSelector("/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/countries.geo.json", "/Users/ammanvedi/Documents/cs/year3/TVWhiteSpaceProject/PROJECT_CODE_FINAL/TVWS/Server-Python" + "/Processing/Data_prep/meta/channelallocations.json")
+		#self.RegionID = RegionSelector("/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/ITURegionCountries.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/countries.geo.json", "/srv/TVWSAPI/TVWS-API-SERVER" + "/Processing/Data_prep/meta/channelallocations.json")
+		self.RegionID = RegionSelector()
 		self.N = Notifier(self.RegionID.getConnection())
 		self.TRACKID = tracker
 		self.N.addTrackRecord(user, tracker)
@@ -165,6 +156,8 @@ class ReadingsParser:
 		if testresult != None:
 			self.BAND_LOWER_FREQ = self.determineBands(data)
 			spectrum = data[1]["Spectrum"]
+			high = max(data[1]["Spectrum"][data[1]["Spectrum"].keys()[0]].keys())
+			low =  min(data[1]["Spectrum"][data[1]["Spectrum"].keys()[0]].keys())
 			print "INFO : combining readings for "+ filename+ " across valid bands..."
 			for ts, loc in data[1]["Location"].iteritems():
 				data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
@@ -172,7 +165,7 @@ class ReadingsParser:
 					data_point["Spectrum"] = self.get_ranges(spectrum[ts])
 					res.append(data_point)
 			print "INFO : finished compiling combined readings for " +  filename
-			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res}
+			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res, 'maxf' : high, 'minf' : low}
 		else:
 			#use notifier to inform user of error
 			self.ERRORSTATUS = 1

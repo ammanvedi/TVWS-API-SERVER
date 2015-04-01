@@ -68,12 +68,12 @@ class DBHelper:
         resobj = []
         with self.getcursor() as cur:
             try:
-                cur.execute('select "DatasetID", "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X("Datasets".geom), ST_Y("Datasets".geom), "tzid" from "Datasets" LEFT JOIN timezones on ("Datasets"."Timezone" = timezones."gid") where "UserID" = ' + uid)
+                cur.execute('select "DatasetID", "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X("Datasets".geom), ST_Y("Datasets".geom), "tzid", "LowestFrequency", "HighestFrequency" from "Datasets" LEFT JOIN timezones on ("Datasets"."Timezone" = timezones."gid") where "UserID" = ' + uid)
                 if cur.rowcount == 0:
                     callback(json.dumps({"QueryError" : "Unexpected : No Datasets for User"}))
                 else:
                     for record in cur:
-                        resobj.append({"DatasetID" : record[0], "userID": record[1], "DateCreated": self.datetimeToTimestampString(record[2]), "StartTime": self.datetimeToTimestampString(record[3]), "EndTime": self.datetimeToTimestampString(record[4]), "DataPointCount": record[5], "ChannelCount": record[6], "Lon": record[7], "Lat": record[8], "Placename" : record[9]})
+                        resobj.append({"DatasetID" : record[0], "userID": record[1], "DateCreated": self.datetimeToTimestampString(record[2]), "StartTime": self.datetimeToTimestampString(record[3]), "EndTime": self.datetimeToTimestampString(record[4]), "DataPointCount": record[5], "ChannelCount": record[6], "Lon": record[7], "Lat": record[8], "Placename" : record[9], "LF": record[10], "HF": record[11]})
                     callback(json.dumps(resobj))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
@@ -82,7 +82,7 @@ class DBHelper:
     def getDatasetMetadata(self, dsid, callback):
         with self.getcursor() as cur:
             try:
-                cur.execute('select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat"  from "Datasets" where "DatasetID" = \'' + dsid + '\'')
+                cur.execute('select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat", "LowestFrequency", "HighestFrequency"  from "Datasets" where "DatasetID" = \'' + dsid + '\'')
                 if cur.rowcount == 0:
                     callback(json.dumps({"QueryError" : "Unexpected : No Dataset with id Found"}))
                 else:
@@ -90,20 +90,20 @@ class DBHelper:
                         callback(json.dumps({"QueryError" : "Unexpected : Multiple Datasets with ID Found (Database error)"}))
                     elif cur.rowcount == 1:
                         for record in cur:
-                            callback(json.dumps({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7]}))
+                            callback(json.dumps({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "LF" : record[8], "HF" : record[9]}))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
 
-    def getDatasetsNear(self, lon, lat, callback):
+    def getDatasetsNear(self, lon, lat, radius,callback):
         res = []
         with self.getcursor() as cur:
             try:
-                cur.execute('SELECT "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat", "DatasetID" FROM "Datasets" WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(' + str(lon) + ',' + str(lat) + '), 4326), 5000) ORDER BY "EndTime" DESC')
+                cur.execute('SELECT "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat", "DatasetID", "HighestFrequency", "LowestFrequency" FROM "Datasets" WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(' + str(lon) + ',' + str(lat) + '), 4326), '+ str(radius)+') ORDER BY "EndTime" DESC')
                 if cur.rowcount == 0:
                     callback(json.dumps({"QueryError" : "Unexpected : No Datasets in region Found, try an increased search radius or different geographical area"}))
                 else:
                     for record in cur:
-                        res.append({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "DatasetID" : record[8]})
+                        res.append({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "DatasetID" : record[8], "LF" : record[9], "HF" : record[10]})
                     callback(json.dumps(res))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
