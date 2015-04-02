@@ -137,6 +137,24 @@ class ReadingsParser:
 	def GetBoundaries(self, struct):
 		return {"UpEnd" : struct["UpEnd"], "LowEnd" : struct["LowEnd"], "CID" : struct["ChannelID"]}
 
+	def generateIntermediate(self, dataO):
+		#take a dataset, validate against a set of regular expressions
+		#for each acceptabel file type the follwoing are needed 
+		#	a regular expression that can recognise the minified stringified file
+		#	a conversion function to transform the dataset into the default standard dataset
+		#inital regular expression is the default case
+		filestring = json.dumps(data)
+		filestring = re.sub("\n", "", filestring)
+		filestring = filestring.replace(" ", "")
+		#parser serctions follow
+		if(re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S) != None):
+			def transform(dataobject):
+				#this is the default case
+				return dataobject
+			return transform(dataO)
+		#cannot assign any parser model
+		return None;
+
 
 	def Generate(self, filename):
 		self.DATA_FILE = filename
@@ -149,11 +167,8 @@ class ReadingsParser:
 			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file does not constitute valid JSON.")
 			return {'FAILED' : 'JSON validation failed'}
 		#strip the string of spaces and newlines
-		filestring = json.dumps(data)
-		filestring = re.sub("\n", "", filestring)
-		filestring = filestring.replace(" ", "")
-		testresult = re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S)
-		if testresult != None:
+		data = self.generateIntermediate(data);
+		if data != None:
 			self.BAND_LOWER_FREQ = self.determineBands(data)
 			spectrum = data[1]["Spectrum"]
 			high = max(data[1]["Spectrum"][data[1]["Spectrum"].keys()[0]].keys())

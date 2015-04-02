@@ -103,7 +103,7 @@ class DBHelper:
                     callback(json.dumps({"QueryError" : "Unexpected : No Datasets in region Found, try an increased search radius or different geographical area"}))
                 else:
                     for record in cur:
-                        res.append({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "DatasetID" : record[8], "LF" : record[9], "HF" : record[10]})
+                        res.append({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "DatasetID" : record[8], "LF" : record[10], "HF" : record[9]})
                     callback(json.dumps(res))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))

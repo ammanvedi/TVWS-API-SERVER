@@ -1,0 +1,793 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: TVWS; Type: DATABASE; Schema: -; Owner: ammanvedi
+--
+
+CREATE DATABASE "TVWS" WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_GB.UTF-8' LC_CTYPE = 'en_GB.UTF-8';
+
+
+ALTER DATABASE "TVWS" OWNER TO ammanvedi;
+
+\connect "TVWS"
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: ChannelReading; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "ChannelReading" (
+    "ChannelReadingID" integer NOT NULL,
+    "Timestamp" timestamp without time zone NOT NULL,
+    "ChannelID" integer NOT NULL,
+    "CombinedPower" integer NOT NULL,
+    geom geometry(Point,4326)
+);
+
+
+ALTER TABLE public."ChannelReading" OWNER TO ammanvedi;
+
+--
+-- Name: ChannelReading_ChannelReadingID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "ChannelReading_ChannelReadingID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."ChannelReading_ChannelReadingID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: ChannelReading_ChannelReadingID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "ChannelReading_ChannelReadingID_seq" OWNED BY "ChannelReading"."ChannelReadingID";
+
+
+--
+-- Name: Datasets; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "Datasets" (
+    "DatasetID" integer NOT NULL,
+    "UserID" integer NOT NULL,
+    "DateCreated" timestamp without time zone NOT NULL,
+    "StartTime" timestamp without time zone NOT NULL,
+    "EndTime" timestamp without time zone NOT NULL,
+    "LowestFrequency" integer,
+    "HighestFrequency" integer,
+    "DataPointCount" integer NOT NULL,
+    "ChannelCount" integer NOT NULL,
+    geom geometry(Point,4326),
+    "Timezone" integer NOT NULL
+);
+
+
+ALTER TABLE public."Datasets" OWNER TO ammanvedi;
+
+--
+-- Name: Datasets_DatasetID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "Datasets_DatasetID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Datasets_DatasetID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: Datasets_DatasetID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "Datasets_DatasetID_seq" OWNED BY "Datasets"."DatasetID";
+
+
+--
+-- Name: DefaultChannels; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "DefaultChannels" (
+    "ITURegionRef" integer NOT NULL,
+    "ITUChannelDefaultRef" integer NOT NULL
+);
+
+
+ALTER TABLE public."DefaultChannels" OWNER TO ammanvedi;
+
+--
+-- Name: ITUChannel; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "ITUChannel" (
+    "ChannelID" integer NOT NULL,
+    "ChannelNumber" integer NOT NULL,
+    "LowerFrequency" real NOT NULL,
+    "HighFrequency" real NOT NULL
+);
+
+
+ALTER TABLE public."ITUChannel" OWNER TO ammanvedi;
+
+--
+-- Name: ITUChannel_ChannelID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "ITUChannel_ChannelID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."ITUChannel_ChannelID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: ITUChannel_ChannelID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "ITUChannel_ChannelID_seq" OWNED BY "ITUChannel"."ChannelID";
+
+
+--
+-- Name: MeasurementDataset; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "MeasurementDataset" (
+    "MeasurementID" integer NOT NULL,
+    "DatasetID" integer NOT NULL
+);
+
+
+ALTER TABLE public."MeasurementDataset" OWNER TO ammanvedi;
+
+--
+-- Name: Measurements; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "Measurements" (
+    "MeasurementID" integer NOT NULL,
+    "Timestamp" timestamp without time zone NOT NULL,
+    "Frequency" integer NOT NULL,
+    "ObservedPower" integer NOT NULL,
+    geom geometry(Point,4326)
+);
+
+
+ALTER TABLE public."Measurements" OWNER TO ammanvedi;
+
+--
+-- Name: Measurements_MeasurementID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "Measurements_MeasurementID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Measurements_MeasurementID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: Measurements_MeasurementID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "Measurements_MeasurementID_seq" OWNED BY "Measurements"."MeasurementID";
+
+
+--
+-- Name: ProcessTracking; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "ProcessTracking" (
+    "TrackID" integer NOT NULL,
+    "UID" integer NOT NULL,
+    "TrackHash" character varying(36) NOT NULL,
+    "DatasetID" integer,
+    "CompletedOn" timestamp without time zone,
+    "StartedOn" timestamp without time zone NOT NULL,
+    "Completed" integer DEFAULT 0 NOT NULL,
+    message character varying(140),
+    error integer
+);
+
+
+ALTER TABLE public."ProcessTracking" OWNER TO ammanvedi;
+
+--
+-- Name: ProcessTracking_TrackID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "ProcessTracking_TrackID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."ProcessTracking_TrackID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: ProcessTracking_TrackID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "ProcessTracking_TrackID_seq" OWNED BY "ProcessTracking"."TrackID";
+
+
+--
+-- Name: ReadingDataset; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "ReadingDataset" (
+    "ChannelReadingID" integer NOT NULL,
+    "DatasetID" integer NOT NULL
+);
+
+
+ALTER TABLE public."ReadingDataset" OWNER TO ammanvedi;
+
+--
+-- Name: RegionChannel; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "RegionChannel" (
+    "RegionID" integer NOT NULL,
+    "ChannelID" integer NOT NULL
+);
+
+
+ALTER TABLE public."RegionChannel" OWNER TO ammanvedi;
+
+--
+-- Name: Regions; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "Regions" (
+    "RegionID" integer NOT NULL,
+    "ITURegionRef" integer NOT NULL,
+    gid integer NOT NULL
+);
+
+
+ALTER TABLE public."Regions" OWNER TO ammanvedi;
+
+--
+-- Name: Regions_RegionID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "Regions_RegionID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Regions_RegionID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: Regions_RegionID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "Regions_RegionID_seq" OWNED BY "Regions"."RegionID";
+
+
+--
+-- Name: UserDataset; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "UserDataset" (
+    "UserID" integer NOT NULL,
+    "DatasetID" integer NOT NULL
+);
+
+
+ALTER TABLE public."UserDataset" OWNER TO ammanvedi;
+
+--
+-- Name: Users; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "Users" (
+    "UserID" integer NOT NULL,
+    "Email" character varying(50) NOT NULL,
+    "Fname" character varying(30) NOT NULL,
+    "Sname" character varying(2044) NOT NULL,
+    "Location" character varying(30) NOT NULL,
+    "PasswordHash" character varying(138) NOT NULL,
+    "GUID" character varying(36) NOT NULL
+);
+
+
+ALTER TABLE public."Users" OWNER TO ammanvedi;
+
+--
+-- Name: Users_UserID_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE "Users_UserID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Users_UserID_seq" OWNER TO ammanvedi;
+
+--
+-- Name: Users_UserID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE "Users_UserID_seq" OWNED BY "Users"."UserID";
+
+
+--
+-- Name: Watching; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE "Watching" (
+    "UserID" integer NOT NULL,
+    "WatchingUserID" integer NOT NULL
+);
+
+
+ALTER TABLE public."Watching" OWNER TO ammanvedi;
+
+--
+-- Name: cntry08; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE cntry08 (
+    gid integer NOT NULL,
+    fips_cntry character varying(2),
+    gmi_cntry character varying(3),
+    iso_2digit character varying(2),
+    iso_3digit character varying(3),
+    iso_num integer,
+    cntry_name character varying(40),
+    long_name character varying(40),
+    isoshrtnam character varying(45),
+    unshrtnam character varying(55),
+    locshrtnam character varying(43),
+    loclngnam character varying(74),
+    status character varying(60),
+    pop2007 double precision,
+    sqkm double precision,
+    sqmi double precision,
+    land_sqkm integer,
+    colormap integer,
+    __oid integer,
+    geom geometry(MultiPolygon,4632)
+);
+
+
+ALTER TABLE public.cntry08 OWNER TO ammanvedi;
+
+--
+-- Name: cntry08_gid_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE cntry08_gid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.cntry08_gid_seq OWNER TO ammanvedi;
+
+--
+-- Name: cntry08_gid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE cntry08_gid_seq OWNED BY cntry08.gid;
+
+
+--
+-- Name: timezones; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE timezones (
+    gid integer NOT NULL,
+    tzid character varying(30),
+    geom geometry(MultiPolygon,4326)
+);
+
+
+ALTER TABLE public.timezones OWNER TO ammanvedi;
+
+--
+-- Name: timezones_gid_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE timezones_gid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.timezones_gid_seq OWNER TO ammanvedi;
+
+--
+-- Name: timezones_gid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE timezones_gid_seq OWNED BY timezones.gid;
+
+
+--
+-- Name: tokens; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE tokens (
+    "UserID" integer NOT NULL,
+    "Token" character varying(128)
+);
+
+
+ALTER TABLE public.tokens OWNER TO ammanvedi;
+
+--
+-- Name: vs_database_diagrams; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE vs_database_diagrams (
+    name character varying(80),
+    diadata text,
+    comment character varying(1022),
+    preview text,
+    lockinfo character varying(80),
+    locktime timestamp with time zone,
+    version character varying(80)
+);
+
+
+ALTER TABLE public.vs_database_diagrams OWNER TO ammanvedi;
+
+--
+-- Name: world; Type: TABLE; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE TABLE world (
+    gid integer NOT NULL,
+    fips_cntry character varying(2),
+    gmi_cntry character varying(3),
+    iso_2digit character varying(2),
+    iso_3digit character varying(3),
+    iso_num integer,
+    cntry_name character varying(40),
+    long_name character varying(40),
+    isoshrtnam character varying(45),
+    unshrtnam character varying(55),
+    locshrtnam character varying(43),
+    loclngnam character varying(74),
+    status character varying(60),
+    pop2007 double precision,
+    sqkm double precision,
+    sqmi double precision,
+    land_sqkm integer,
+    colormap integer,
+    __oid integer,
+    geom geometry(MultiPolygon,4632)
+);
+
+
+ALTER TABLE public.world OWNER TO ammanvedi;
+
+--
+-- Name: world_gid_seq; Type: SEQUENCE; Schema: public; Owner: ammanvedi
+--
+
+CREATE SEQUENCE world_gid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.world_gid_seq OWNER TO ammanvedi;
+
+--
+-- Name: world_gid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ammanvedi
+--
+
+ALTER SEQUENCE world_gid_seq OWNED BY world.gid;
+
+
+--
+-- Name: ChannelReadingID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "ChannelReading" ALTER COLUMN "ChannelReadingID" SET DEFAULT nextval('"ChannelReading_ChannelReadingID_seq"'::regclass);
+
+
+--
+-- Name: DatasetID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "Datasets" ALTER COLUMN "DatasetID" SET DEFAULT nextval('"Datasets_DatasetID_seq"'::regclass);
+
+
+--
+-- Name: ChannelID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "ITUChannel" ALTER COLUMN "ChannelID" SET DEFAULT nextval('"ITUChannel_ChannelID_seq"'::regclass);
+
+
+--
+-- Name: MeasurementID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "Measurements" ALTER COLUMN "MeasurementID" SET DEFAULT nextval('"Measurements_MeasurementID_seq"'::regclass);
+
+
+--
+-- Name: TrackID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "ProcessTracking" ALTER COLUMN "TrackID" SET DEFAULT nextval('"ProcessTracking_TrackID_seq"'::regclass);
+
+
+--
+-- Name: RegionID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "Regions" ALTER COLUMN "RegionID" SET DEFAULT nextval('"Regions_RegionID_seq"'::regclass);
+
+
+--
+-- Name: UserID; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY "Users" ALTER COLUMN "UserID" SET DEFAULT nextval('"Users_UserID_seq"'::regclass);
+
+
+--
+-- Name: gid; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY cntry08 ALTER COLUMN gid SET DEFAULT nextval('cntry08_gid_seq'::regclass);
+
+
+--
+-- Name: gid; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY timezones ALTER COLUMN gid SET DEFAULT nextval('timezones_gid_seq'::regclass);
+
+
+--
+-- Name: gid; Type: DEFAULT; Schema: public; Owner: ammanvedi
+--
+
+ALTER TABLE ONLY world ALTER COLUMN gid SET DEFAULT nextval('world_gid_seq'::regclass);
+
+
+--
+-- Name: ChannelReading_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "ChannelReading"
+    ADD CONSTRAINT "ChannelReading_pkey" PRIMARY KEY ("ChannelReadingID");
+
+
+--
+-- Name: Datasets_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "Datasets"
+    ADD CONSTRAINT "Datasets_pkey" PRIMARY KEY ("DatasetID");
+
+
+--
+-- Name: ITUChannel_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "ITUChannel"
+    ADD CONSTRAINT "ITUChannel_pkey" PRIMARY KEY ("ChannelID");
+
+
+--
+-- Name: MeasurementDataset_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "MeasurementDataset"
+    ADD CONSTRAINT "MeasurementDataset_pkey" PRIMARY KEY ("DatasetID", "MeasurementID");
+
+
+--
+-- Name: Measurements_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "Measurements"
+    ADD CONSTRAINT "Measurements_pkey" PRIMARY KEY ("MeasurementID");
+
+
+--
+-- Name: ReadingDataset_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "ReadingDataset"
+    ADD CONSTRAINT "ReadingDataset_pkey" PRIMARY KEY ("ChannelReadingID", "DatasetID");
+
+
+--
+-- Name: RegionChannel_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "RegionChannel"
+    ADD CONSTRAINT "RegionChannel_pkey" PRIMARY KEY ("ChannelID", "RegionID");
+
+
+--
+-- Name: Regions_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "Regions"
+    ADD CONSTRAINT "Regions_pkey" PRIMARY KEY ("RegionID");
+
+
+--
+-- Name: UserDataset_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "UserDataset"
+    ADD CONSTRAINT "UserDataset_pkey" PRIMARY KEY ("DatasetID", "UserID");
+
+
+--
+-- Name: Users_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "Users"
+    ADD CONSTRAINT "Users_pkey" PRIMARY KEY ("Email");
+
+
+--
+-- Name: Watching_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY "Watching"
+    ADD CONSTRAINT "Watching_pkey" PRIMARY KEY ("UserID", "WatchingUserID");
+
+
+--
+-- Name: cntry08_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY cntry08
+    ADD CONSTRAINT cntry08_pkey PRIMARY KEY (gid);
+
+
+--
+-- Name: timezones_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY timezones
+    ADD CONSTRAINT timezones_pkey PRIMARY KEY (gid);
+
+
+--
+-- Name: tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY tokens
+    ADD CONSTRAINT tokens_pkey PRIMARY KEY ("UserID");
+
+
+--
+-- Name: world_pkey; Type: CONSTRAINT; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+ALTER TABLE ONLY world
+    ADD CONSTRAINT world_pkey PRIMARY KEY (gid);
+
+
+--
+-- Name: UIDIndex; Type: INDEX; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE INDEX "UIDIndex" ON "Users" USING btree ("UserID");
+
+
+--
+-- Name: cntry08_geom_gist; Type: INDEX; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE INDEX cntry08_geom_gist ON cntry08 USING gist (geom);
+
+
+--
+-- Name: timezones_geom_gist; Type: INDEX; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE INDEX timezones_geom_gist ON timezones USING gist (geom);
+
+
+--
+-- Name: world_geom_gist; Type: INDEX; Schema: public; Owner: ammanvedi; Tablespace: 
+--
+
+CREATE INDEX world_geom_gist ON world USING gist (geom);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: ammanvedi
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM ammanvedi;
+GRANT ALL ON SCHEMA public TO ammanvedi;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
