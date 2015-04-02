@@ -155,7 +155,7 @@ api = tornado.web.Application([
 if __name__ == "__main__":
     if (os.path.exists("/home/ammanvedi/cert/ssl.crt")):
         print "found ssl cert, using SSL"
-        http_server = tornado.httpserver.HTTPServer(api, ssl_options=dict(certfile="/home/ammanvedi/cert/measurespace.chain.pem",keyfile="/home/ammanvedi/cert/private.key", ssl_version= ssl.PROTOCOL_SSLv3)) 
+        http_server = tornado.httpserver.HTTPServer(api, ssl_options=dict(certfile="/home/ammanvedi/cert/measurespace.chain.pem",keyfile="/home/ammanvedi/cert/private.key", ssl_version=ssl.PROTOCOL_SSLv23)) 
         sys.stdout.write("listening on 4000\n")
         http_server.listen(4000) 
         tornado.ioloop.IOLoop.instance().start()
