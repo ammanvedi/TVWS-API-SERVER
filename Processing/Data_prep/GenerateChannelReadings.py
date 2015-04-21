@@ -8,6 +8,7 @@ sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib
 import psycopg2
 from ProcessNotifier import Notifier
 import re
+from jsonschema import validate
 
 
 '''
@@ -143,17 +144,32 @@ class ReadingsParser:
 		#	a regular expression that can recognise the minified stringified file
 		#	a conversion function to transform the dataset into the default standard dataset
 		#inital regular expression is the default case
-		filestring = json.dumps(data)
-		filestring = re.sub("\n", "", filestring)
-		filestring = filestring.replace(" ", "")
+#		filestring = json.dumps(dataO)
+#		filestring = re.sub("\n", "", filestring)
+#		filestring = filestring.replace(" ", "")
+#		filestring = filestring.replace("\t", "")
+#		print filestring
 		#parser serctions follow
-		if(re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S) != None):
+		schema = {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":[{"type":"string"},{"type":"object","properties":{"Spectrum":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"number"}},"additionalProperties":False}},"additionalProperties":False},"Location":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"array","items":[{"type":"number"},{"type":"number"},{"type":"number"}],"required":["0","1"],"additionalProperties":False}},"additionalProperties":False}},"required":["Spectrum"]}],"required":["1"]}
+		try:
+			validate(dataO, schema)
 			def transform(dataobject):
 				#this is the default case
 				return dataobject
 			return transform(dataO)
-		#cannot assign any parser model
-		return None;
+		except ValidationError:
+			print "schema not succ"
+			return None;
+#
+#		if(re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S) != None):
+#			print "RE succ"
+#			def transform(dataobject):
+#				#this is the default case
+#				return dataobject
+#			return transform(dataO)
+#		#cannot assign any parser model
+#		print "RE not succ"
+#		return None;
 
 
 	def Generate(self, filename):
@@ -168,6 +184,7 @@ class ReadingsParser:
 			return {'FAILED' : 'JSON validation failed'}
 		#strip the string of spaces and newlines
 		data = self.generateIntermediate(data);
+		print "generate intermediate gave ", data
 		if data != None:
 			self.BAND_LOWER_FREQ = self.determineBands(data)
 			spectrum = data[1]["Spectrum"]
@@ -220,11 +237,25 @@ class ReadingsParser:
 		print "INFO : wrote file to " +  filepath
 
 	def farther_than(self, meters, accepted, point):
+		#print accepted
+		self.average_nearpoints
 		found = (x for x in accepted if self.haversine(x["lon"], x["lat"], point["lon"], point["lat"]) < meters)
+		print list(found)
 		if len(list(found))  == 0:
 			return 1
 		if len(list(found)) > 0:
 			return 0
+	def average_nearpoints(self, meters, accepted, point):
+		for idx, x in accepted:
+			if (self.haversine(x["lon"], x["lat"], point["lon"], point["lat"]) < meters):
+				newpoint = point
+				for idxx, y in newpoint[0]["spectrum"]:
+					newpoint[0]["spectrum"][idxx] = (newpoint[0]["spectrum"][idxx] + accepted[idx][0]["spectrum"][idxx])/2
+				accepted[idx][0] = newpoint
+				print "combined two"
+				print accepted[idx][0]
+
+
 
 def processdata(inf, outf, userid, trackhash):
 	gen = ReadingsParser(47,30, userid, trackhash)

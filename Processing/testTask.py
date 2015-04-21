@@ -3,7 +3,7 @@ from ProcessingTask import Process
 import json
 
 
-Process.delay("/Users/ammanvedi/Desktop/benchmark/unoptimised/ldn-realavg25freq.json", "/Users/ammanvedi/Desktop/benchmark/results/ldn-realavg.json", 0, "xxxalalal")
+Process.delay("/Users/ammanvedi/Desktop/lift-loc-fixed.json", "/Users/ammanvedi/Desktop/barttest.json", 0, "xxxalalal")
 
 
 #json_file = open("./Data_prep/inputs/Scan.json")
