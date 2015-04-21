@@ -181,9 +181,10 @@ class ReadingsParser:
 		except ValueError, e:
 			self.ERRORSTATUS = 1
 			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file does not constitute valid JSON.")
+			print "FAILED : JSON validation failed"
 			return {'FAILED' : 'JSON validation failed'}
 		#strip the string of spaces and newlines
-		data = self.generateIntermediate(data);
+		data = self.generateIntermediate(data)
 		print "generate intermediate gave ", data
 		if data != None:
 			self.BAND_LOWER_FREQ = self.determineBands(data)
@@ -194,8 +195,10 @@ class ReadingsParser:
 			for ts, loc in data[1]["Location"].iteritems():
 				data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
 				if self.farther_than(self.MIN_DISTANCE, res, data_point):
+					print "far enough"
 					data_point["Spectrum"] = self.get_ranges(spectrum[ts])
 					res.append(data_point)
+				print "too close"
 			print "INFO : finished compiling combined readings for " +  filename
 			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res, 'maxf' : high, 'minf' : low}
 		else:
@@ -240,6 +243,7 @@ class ReadingsParser:
 		#print accepted
 		self.average_nearpoints
 		found = (x for x in accepted if self.haversine(x["lon"], x["lat"], point["lon"], point["lat"]) < meters)
+		print "points that are too close"
 		print list(found)
 		if len(list(found))  == 0:
 			return 1
@@ -258,7 +262,7 @@ class ReadingsParser:
 
 
 def processdata(inf, outf, userid, trackhash):
-	gen = ReadingsParser(47,30, userid, trackhash)
+	gen = ReadingsParser(47,2, userid, trackhash)
 	gen.printToJSON(outf,gen.Generate(inf))
 	if(gen.ERRORSTATUS):
 		print "INFO (ERROR): processing returned an error"
