@@ -9,6 +9,13 @@ import psycopg2
 from ProcessNotifier import Notifier
 import re
 from jsonschema import validate
+import csv
+from django.core.exceptions import ValidationError	
+import time
+import datetime
+import calendar
+import arrow
+
 
 
 '''
@@ -150,6 +157,100 @@ class ReadingsParser:
 #		filestring = filestring.replace("\t", "")
 #		print filestring
 		#parser serctions follow
+		print type(dataO)
+		if not isinstance(dataO, list):
+			print "is a csv"
+			try:
+				out = ""
+				timeslist = []
+				loclist = []
+				templat = 0.0
+				rowno = 0
+				startval = 0
+				hopval = 0.0
+				Hz = ""
+				sDate = " "
+				sTime = " "
+				out+= "["
+				out+= "\"RTLSDR Scanner\","
+				out+= "{"
+				out+= "\"Description\": \"\","
+				out+= "\"Time\": \"2014-09-14T14:36:30.292207Z\","
+				out+= "\"Spectrum\": {"
+				first = True
+				for row in dataO:
+					rowNo = 0;
+					for colnum, data in enumerate(row):
+						if colnum == 0:
+							sDate = row[colnum]
+						if colnum == 1:
+							if not (row[colnum] == sTime):
+								sTime = row[colnum]
+								#dt = time.strptime(sDate + " " + sTime, "%Y-%m-%d %H:%M:%S")
+								unixTime = arrow.get(sDate + "" + sTime, "YYYY-MM-DD HH:mm:ss").timestamp
+								if first:
+									first = False
+								else:
+									out+= "},"
+								out+= "\"" + str(unixTime) + "\": {"
+								timeslist.append(unixTime)
+						if colnum == 2:
+							startval = int(row[colnum])
+						if rowNo == 4:
+							hopval = float(row[colnum])
+						if rowNo == 6:
+							templat = float(row[colnum])
+							rowNo+=1
+							continue
+						if rowNo == 7:
+							x = [templat, float(row[colnum])]
+							loclist.append(x)
+							rowNo+=1
+							continue
+						if rowNo > 5:
+							Hz = (startval + (hopval * (rowNo - 6)))/1000000
+							out+= "\"" + str(Hz) + "\": " + row[colnum] + ",\n"
+							#print "\"" + str(Hz) + "\": " + row[colnum] + ","
+						rowNo+=1
+
+				out+= "}"
+				out+= "},"
+				out+= "\"Location\": {"
+				first = True
+
+				newlist = []
+				df = False
+				for y in loclist:
+					df = False
+					for yy in newlist:
+						if (yy[0] == y[0]) and (yy[1] == yy[1]):
+							df = True
+					if not df:
+						newlist.append(y)
+				for i in timeslist:
+					if first:
+						first = False
+					else:
+						out+= "],"
+					ll = newlist[timeslist.index(i)]
+
+					out+= "\"" + str(i) + "\": ["
+					out+= "" + str(ll[0]) +","
+					out+= "" + str(ll[1]) +","
+					out+= "189.7"
+				out+= "]"
+				out+= "}"
+				out+= "}"
+				out+="]"
+				out = re.sub("(,[\\n\\s]*})", "}", out)	
+				#print out
+				text_file = open("try.json", "w")
+				text_file.write(out)
+				text_file.close()			
+				return json.loads(out)
+			except ValidationError:
+				print "INFO : COULD NOT MATCH WITH CSV"
+
 		schema = {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":[{"type":"string"},{"type":"object","properties":{"Spectrum":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"number"}},"additionalProperties":False}},"additionalProperties":False},"Location":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"array","items":[{"type":"number"},{"type":"number"},{"type":"number"}],"required":["0","1"],"additionalProperties":False}},"additionalProperties":False}},"required":["Spectrum"]}],"required":["1"]}
 		try:
 			validate(dataO, schema)
@@ -158,8 +259,12 @@ class ReadingsParser:
 				return dataobject
 			return transform(dataO)
 		except ValidationError:
-			print "schema not succ"
-			return None;
+			print "INFO : COULD NOT MATCH WITH DEFAULT JSON SCHEMA"
+		
+
+		return None
+
+
 #
 #		if(re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S) != None):
 #			print "RE succ"
@@ -178,14 +283,19 @@ class ReadingsParser:
 		json_file = open(self.DATA_FILE)
 		try:
 			data = json.load(json_file)
-		except ValueError, e:
-			self.ERRORSTATUS = 1
-			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file does not constitute valid JSON.")
-			print "FAILED : JSON validation failed"
-			return {'FAILED' : 'JSON validation failed'}
+		except ValueError:
+			print "there is valuerror"
+			try:
+				data = csv.reader(open(self.DATA_FILE))
+
+			except Error:
+				print "there is error"
+				self.ERRORSTATUS = 1
+				self.N.updateTrackRecordError(self.TRACKID, "Uploaded file does not constitute valid JSON or CSV.")
+				print "FAILED : JSON or CSV validation failed"
+				return {'FAILED' : 'JSON or CSV validation failed'}
 		#strip the string of spaces and newlines
 		data = self.generateIntermediate(data)
-		print "generate intermediate gave ", data
 		if data != None:
 			self.BAND_LOWER_FREQ = self.determineBands(data)
 			spectrum = data[1]["Spectrum"]
@@ -195,10 +305,8 @@ class ReadingsParser:
 			for ts, loc in data[1]["Location"].iteritems():
 				data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
 				if self.farther_than(self.MIN_DISTANCE, res, data_point):
-					print "far enough"
 					data_point["Spectrum"] = self.get_ranges(spectrum[ts])
 					res.append(data_point)
-				print "too close"
 			print "INFO : finished compiling combined readings for " +  filename
 			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res, 'maxf' : high, 'minf' : low}
 		else:
@@ -209,12 +317,15 @@ class ReadingsParser:
 
 	def get_ranges(self, spectrum):
 		res = []
+		#print self.BAND_LOWER_FREQ
 		for rangedict in self.BAND_LOWER_FREQ:
 			hf = rangedict["UpEnd"]
 			freqsinrange = [k for k,v in spectrum.items() if (float(rangedict["LowEnd"]) <= float(k) <= float(rangedict["UpEnd"]))]
 			combined = 0.0
 			for val in freqsinrange:
 				combined += (spectrum[val])
+			#print combined
+			#print freqsinrange
 			combined = (combined/len(freqsinrange))
 			res.append(combined)
 		return res
@@ -243,8 +354,6 @@ class ReadingsParser:
 		#print accepted
 		self.average_nearpoints
 		found = (x for x in accepted if self.haversine(x["lon"], x["lat"], point["lon"], point["lat"]) < meters)
-		print "points that are too close"
-		print list(found)
 		if len(list(found))  == 0:
 			return 1
 		if len(list(found)) > 0:
@@ -256,8 +365,6 @@ class ReadingsParser:
 				for idxx, y in newpoint[0]["spectrum"]:
 					newpoint[0]["spectrum"][idxx] = (newpoint[0]["spectrum"][idxx] + accepted[idx][0]["spectrum"][idxx])/2
 				accepted[idx][0] = newpoint
-				print "combined two"
-				print accepted[idx][0]
 
 
 
