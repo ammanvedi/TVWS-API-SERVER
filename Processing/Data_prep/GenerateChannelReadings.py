@@ -280,7 +280,7 @@ class ReadingsParser:
 	def Generate(self, filename):
 		self.DATA_FILE = filename
 		res = []
-		json_file = open(self.DATA_FILE)
+		json_file = open(self.DATA_FILE, "rU")
 		try:
 			data = json.load(json_file)
 		except ValueError:
