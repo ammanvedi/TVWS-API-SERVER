@@ -187,6 +187,7 @@ class ReadingsParser:
 							if not (row[colnum] == sTime):
 								sTime = row[colnum]
 								#dt = time.strptime(sDate + " " + sTime, "%Y-%m-%d %H:%M:%S")
+								print sDate + "" + sTime
 								try:
 									unixTime = arrow.get(sDate + "" + sTime, "MM-DD-YY HH:mm:ss").timestamp
 								except:
