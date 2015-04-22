@@ -194,8 +194,11 @@ class ReadingsParser:
 									try:
 										unixTime = arrow.get(sDate + "" + sTime, "YYYY-MM-DD HH:mm:ss").timestamp
 									except:
-										print "INFO : Could not parse date format"
-										return None
+										try:
+											unixTime = arrow.get(sDate + "" + sTime, "DD/MM/YY HH:mm:ss").timestamp
+										except:
+											print "INFO : Could not parse date format"
+											return None
 								if first:
 									first = False
 								else:
