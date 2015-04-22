@@ -238,17 +238,30 @@ class ReadingsParser:
 							df = True
 					if not df:
 						newlist.append(y)
-				for i in timeslist:
-					if first:
-						first = False
-					else:
-						out+= "],"
-					ll = newlist[timeslist.index(i)]
+				if(len(newlist) > 1):
+					for i in timeslist:
+						if first:
+							first = False
+						else:
+							out+= "],"
+						ll = newlist[timeslist.index(i)]
 
-					out+= "\"" + str(i) + "\": ["
-					out+= "" + str(ll[0]) +","
-					out+= "" + str(ll[1]) +","
-					out+= "189.7"
+						out+= "\"" + str(i) + "\": ["
+						out+= "" + str(ll[0]) +","
+						out+= "" + str(ll[1]) +","
+						out+= "189.7"
+				else:
+					for i in timeslist:
+						if first:
+							first = False
+						else:
+							out+= "],"
+						ll = newlist[0]
+
+						out+= "\"" + str(i) + "\": ["
+						out+= "" + str(ll[0]) +","
+						out+= "" + str(ll[1]) +","
+						out+= "189.7"	
 				out+= "]"
 				out+= "}"
 				out+= "}"
