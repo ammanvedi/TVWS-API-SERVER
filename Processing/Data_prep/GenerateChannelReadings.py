@@ -189,7 +189,7 @@ class ReadingsParser:
 								#dt = time.strptime(sDate + " " + sTime, "%Y-%m-%d %H:%M:%S")
 								print sDate + "" + sTime
 								try:
-									unixTime = arrow.get(sDate + "" + sTime, "MM-DD-YY HH:mm:ss").timestamp
+									unixTime = arrow.get(sDate + "" + sTime, "DD-MM-YY HH:mm:ss").timestamp
 								except:
 									try:
 										unixTime = arrow.get(sDate + "" + sTime, "YYYY-MM-DD HH:mm:ss").timestamp
