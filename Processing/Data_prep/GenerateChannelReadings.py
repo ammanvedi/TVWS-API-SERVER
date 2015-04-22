@@ -187,7 +187,14 @@ class ReadingsParser:
 							if not (row[colnum] == sTime):
 								sTime = row[colnum]
 								#dt = time.strptime(sDate + " " + sTime, "%Y-%m-%d %H:%M:%S")
-								unixTime = arrow.get(sDate + "" + sTime, "YYYY-MM-DD HH:mm:ss").timestamp
+								try:
+									unixTime = arrow.get(sDate + "" + sTime, "MM-DD-YY HH:mm:ss").timestamp
+								except:
+									try:
+										unixTime = arrow.get(sDate + "" + sTime, "YYYY-MM-DD HH:mm:ss").timestamp
+									except:
+										print "INFO : Could not parse date format"
+										return None
 								if first:
 									first = False
 								else:
