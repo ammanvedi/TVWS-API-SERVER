@@ -154,7 +154,7 @@ class UserDatasetsHandler(tornado.web.RequestHandler):
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler),
     (r"/upload/track/([0-9]+\.[0-9]+)", TrackHandler),
-    (r"/datasets/", AllDatasetHandler),
+    (r"/datasets/all", AllDatasetHandler),
     (r"/datasets/([0-9]+)/meta", DatasetByIDHandler),
     (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler),
     (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)/([0-9]+)", DatasetsByLatLongHandler),
