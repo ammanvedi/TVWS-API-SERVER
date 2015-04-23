@@ -77,6 +77,21 @@ class DBHelper:
                     callback(json.dumps(resobj))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
+    #select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat"  from "Datasets" where "DatasetID" = '8';
+    def getDatasetMetadataAll(self, dsid, callback):
+        with self.getcursor() as cur:
+            try:
+                cur.execute('select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat", "LowestFrequency", "HighestFrequency"  from "Datasets"')
+                if cur.rowcount == 0:
+                    callback(json.dumps({"QueryError" : "Unexpected : No Dataset with id Found"}))
+                else:
+                    if cur.rowcount > 1:
+                        callback(json.dumps({"QueryError" : "Unexpected : Multiple Datasets with ID Found (Database error)"}))
+                    elif cur.rowcount == 1:
+                        for record in cur:
+                            callback(json.dumps({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "LF" : record[8], "HF" : record[9]}))
+            except psycopg2.Error, e:
+                callback(json.dumps({"QueryError" : e.pgerror }))
 
     #select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat"  from "Datasets" where "DatasetID" = '8';
     def getDatasetMetadata(self, dsid, callback):

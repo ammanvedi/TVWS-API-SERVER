@@ -62,6 +62,17 @@ class DatasetByIDHandler(tornado.web.RequestHandler):
         self.write(str(res))
         self.finish()
 
+class AllDatasetHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self, dsid):
+        self.set_default_headers()
+        res = yield tornado.gen.Task(psqlHelper.getDatasetMetadataAll, str(dsid))
+        self.write(str(res))
+        self.finish()
+
 class DatasetReadingsByIDHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
@@ -143,6 +154,7 @@ class UserDatasetsHandler(tornado.web.RequestHandler):
 api = tornado.web.Application([
     (r"/upload", DataUploadHandler),
     (r"/upload/track/([0-9]+\.[0-9]+)", TrackHandler),
+    (r"/datasets/", AllDatasetHandler),
     (r"/datasets/([0-9]+)/meta", DatasetByIDHandler),
     (r"/datasets/([0-9]+)/readings", DatasetReadingsByIDHandler),
     (r"/datasets/near/(-?[0-9]+\.[0-9]+)/(-?[0-9]+\.[0-9]+)/([0-9]+)", DatasetsByLatLongHandler),
