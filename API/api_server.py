@@ -67,9 +67,9 @@ class AllDatasetHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Origin", "*")
     @tornado.web.asynchronous
     @gen.coroutine
-    def get(self, dsid):
+    def get(self):
         self.set_default_headers()
-        res = yield tornado.gen.Task(psqlHelper.getDatasetMetadataAll, str(dsid))
+        res = yield tornado.gen.Task(psqlHelper.getDatasetMetadataAll)
         self.write(str(res))
         self.finish()
 
