@@ -79,17 +79,16 @@ class DBHelper:
                 callback(json.dumps({"QueryError" : e.pgerror }))
     #select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat"  from "Datasets" where "DatasetID" = '8';
     def getDatasetMetadataAll(self,callback):
-        res = []
+        resobj = []
         with self.getcursor() as cur:
             try:
-                cur.execute('select "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X(geom) AS "Lon", ST_Y(geom) AS "Lat", "LowestFrequency", "HighestFrequency"  from "Datasets"')
+                cur.execute('select "DatasetID", "UserID", "DateCreated", "StartTime", "EndTime", "DataPointCount", "ChannelCount", ST_X("Datasets".geom), ST_Y("Datasets".geom), "tzid", "LowestFrequency", "HighestFrequency" from "Datasets" LEFT JOIN timezones on ("Datasets"."Timezone" = timezones."gid")')
                 if cur.rowcount == 0:
-                    callback(json.dumps({"QueryError" : "Unexpected : No Dataset with id Found"}))
+                    callback(json.dumps({"QueryError" : "Unexpected : No Datasets for User"}))
                 else:
-                    if cur.rowcount > 1:
-                        for record in cur:
-                            res.append({"UserID" : record[0], "Created" : self.datetimeToTimestampString(record[1]), "StartTime" : self.datetimeToTimestampString(record[2]), "EndTime" : self.datetimeToTimestampString(record[3]), "PointCount": record[4], "ChannelCount" : record[5], "Lon" : record[6], "Lat" : record[7], "LF" : record[8], "HF" : record[9]})
-                    callback(json.dumps(res))
+                    for record in cur:
+                        resobj.append({"DatasetID" : record[0], "userID": record[1], "DateCreated": self.datetimeToTimestampString(record[2]), "StartTime": self.datetimeToTimestampString(record[3]), "EndTime": self.datetimeToTimestampString(record[4]), "DataPointCount": record[5], "ChannelCount": record[6], "Lon": record[7], "Lat": record[8], "Placename" : record[9], "LF": record[10], "HF": record[11]})
+                    callback(json.dumps(resobj))
             except psycopg2.Error, e:
                 callback(json.dumps({"QueryError" : e.pgerror }))
 
