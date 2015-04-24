@@ -15,6 +15,10 @@ import time
 import datetime
 import calendar
 import arrow
+from threading import Thread
+import multiprocessing
+from celery import Celery
+
 
 
 
@@ -277,7 +281,9 @@ class ReadingsParser:
 
 		schema = {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":[{"type":"string"},{"type":"object","properties":{"Spectrum":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"number"}},"additionalProperties":False}},"additionalProperties":False},"Location":{"type":"object","properties":{"/":{}},"patternProperties":{"^([0-9]+)+([\\.]([0-9]+))?$":{"type":"array","items":[{"type":"number"},{"type":"number"},{"type":"number"}],"required":["0","1"],"additionalProperties":False}},"additionalProperties":False}},"required":["Spectrum"]}],"required":["1"]}
 		try:
+			print "INFO : trying json schema"
 			validate(dataO, schema)
+			print "INFO : validated using json schema - default"
 			def transform(dataobject):
 				#this is the default case
 				return dataobject
@@ -326,33 +332,29 @@ class ReadingsParser:
 			high = max(data[1]["Spectrum"][data[1]["Spectrum"].keys()[0]].keys())
 			low =  min(data[1]["Spectrum"][data[1]["Spectrum"].keys()[0]].keys())
 			print "INFO : combining readings for "+ filename+ " across valid bands..."
-			for ts, loc in data[1]["Location"].iteritems():
-				data_point = {'lat' : loc[0], 'lon' : loc[1], 'ts' : int(float(ts))}
-				if self.farther_than(self.MIN_DISTANCE, res, data_point):
-					data_point["Spectrum"] = self.get_ranges(spectrum[ts])
-					res.append(data_point)
-			print "INFO : finished compiling combined readings for " +  filename
-			return {'BANDS' : self.BAND_LOWER_FREQ, 'DATA' : res, 'maxf' : high, 'minf' : low}
+			return {"DTA": data, "CHA": self.BAND_LOWER_FREQ, 'maxf' : high, 'minf' : low}
 		else:
 			#use notifier to inform user of error
 			self.ERRORSTATUS = 1
 			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file has incorrect format. Check documentation for valid formats.")
 			return {'FAILED' : 'regular expression validator failed'}
-
-	def get_ranges(self, spectrum):
-		res = []
-		#print self.BAND_LOWER_FREQ
-		for rangedict in self.BAND_LOWER_FREQ:
-			hf = rangedict["UpEnd"]
-			freqsinrange = [k for k,v in spectrum.items() if (float(rangedict["LowEnd"]) <= float(k) <= float(rangedict["UpEnd"]))]
-			combined = 0.0
-			for val in freqsinrange:
-				combined += (spectrum[val])
-			#print combined
-			#print freqsinrange
-			combined = (combined/len(freqsinrange))
-			res.append(combined)
-		return res
+#
+#	def comb(self, spectra):
+#		print spectra
+#	def get_ranges(self, spectrum):
+#		res = []
+#		#print self.BAND_LOWER_FREQ
+#		for rangedict in self.BAND_LOWER_FREQ:
+#			hf = rangedict["UpEnd"]
+#			freqsinrange = [k for k,v in spectrum.items() if (float(rangedict["LowEnd"]) <= float(k) <= float(rangedict["UpEnd"]))]
+#			combined = 0.0
+#			for val in freqsinrange:
+#				combined += (spectrum[val])
+#			#print combined
+#			#print freqsinrange
+#			combined = (combined/len(freqsinrange))
+#			res.append(combined)
+#		return res
 
 	def haversine(self, lon1, lat1, lon2, lat2):
 	    """
