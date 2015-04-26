@@ -30,7 +30,7 @@ class DBHelper:
     CONNECTIONSTR = "host='localhost' dbname='TVWS' user='ammanvedi' password=''"
 
     def __init__(self):
-        self.dbpool = psycopg2.pool.SimpleConnectionPool(1,20,self.CONNECTIONSTR)
+        self.dbpool = psycopg2.pool.SimpleConnectionPool(30,50,self.CONNECTIONSTR)
         print "INFO : connecting to database	-> ( " + self.CONNECTIONSTR + ")"
         print "INFO : Connected to Postgres DB"
 
