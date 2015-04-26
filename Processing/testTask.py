@@ -3,8 +3,16 @@ from ProcessingTask import Process
 import json
 
 
-Process.delay("/Users/ammanvedi/Desktop/benchmark/unoptimised/ldn-realavg300freq.json", "/Users/ammanvedi/Desktop/barttest.json", 0, "xxxalalal")
 
+
+#Process.delay("/Users/ammanvedi/Downloads/tunnel.csv", "/Users/ammanvedi/Desktop/bartsstest.json", 0, "xxxrrralalal")
+
+	
+#Process.delay("/Users/ammanvedi/Desktop/track4-miasto.csv", "/Users/ammanvedi/Desktop/bartteqqqst.json", 0, "xxxwwwalalal")
+
+#Process.delay("/Users/ammanvedi/Desktop/lift-loc-fixed.json", "/Users/ammanvedi/Desktop/barteeetest.json", 0, "xxxaeeelalal")
+
+Process.delay("/Users/ammanvedi/Downloads/track3-korek.csv", "/Users/ammanvedi/Desktop/barttestrtt.json", 0, "xxxasslalal")
 
 #json_file = open("./Data_prep/inputs/Scan.json")
 #data = json.load(json_file)

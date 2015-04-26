@@ -6,7 +6,6 @@ from celery import chord
 import json
 
 app = Celery('ProcessingTask', broker='amqp://guest@localhost//', backend='redis://localhost:6379/0')
-
 OUTPATH = "HUEHUHUEHEUE"
 BANDSLIST = None
 MAXF = 0.0
@@ -43,6 +42,7 @@ def printToJSON(filepath, rawdatas):
 @app.task(ignore_result=False)
 def get_ranges(spectrum, BLF, dp):
 	res = []
+	print len(spectrum.keys())
 	#print self.BAND_LOWER_FREQ
 	for rangedict in BLF:
 		hf = rangedict["UpEnd"]

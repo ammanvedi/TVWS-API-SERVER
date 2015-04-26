@@ -21,7 +21,6 @@ from celery import Celery
 
 
 
-
 '''
 	identify bands
 '''
@@ -150,17 +149,6 @@ class ReadingsParser:
 		return {"UpEnd" : struct["UpEnd"], "LowEnd" : struct["LowEnd"], "CID" : struct["ChannelID"]}
 
 	def generateIntermediate(self, dataO):
-		#take a dataset, validate against a set of regular expressions
-		#for each acceptabel file type the follwoing are needed 
-		#	a regular expression that can recognise the minified stringified file
-		#	a conversion function to transform the dataset into the default standard dataset
-		#inital regular expression is the default case
-#		filestring = json.dumps(dataO)
-#		filestring = re.sub("\n", "", filestring)
-#		filestring = filestring.replace(" ", "")
-#		filestring = filestring.replace("\t", "")
-#		print filestring
-		#parser serctions follow
 		print type(dataO)
 		if not isinstance(dataO, list):
 			print "is a csv"
@@ -295,18 +283,6 @@ class ReadingsParser:
 		return None
 
 
-#
-#		if(re.search("^\\[.*,{.+,[\"”]Spectrum[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:{([\"”]\\d+(\\.\\d+)?[\"”]:-?\\d+(\\.\\d+)?,?)+},?)+}.*,?[\"”]Location[\"”]:{([\"”]\\d+(\\.\\d+)?(\\.[f]\\d+)?[\"”]:\\[-?\\d+\\.\\d+,-?\\d+\\.\\d+(,\\d+\\.\\d+)?\\],?)+}.*}.*]" ,filestring, re.S) != None):
-#			print "RE succ"
-#			def transform(dataobject):
-#				#this is the default case
-#				return dataobject
-#			return transform(dataO)
-#		#cannot assign any parser model
-#		print "RE not succ"
-#		return None;
-
-
 	def Generate(self, filename):
 		self.DATA_FILE = filename
 		res = []
@@ -338,23 +314,7 @@ class ReadingsParser:
 			self.ERRORSTATUS = 1
 			self.N.updateTrackRecordError(self.TRACKID, "Uploaded file has incorrect format. Check documentation for valid formats.")
 			return {'FAILED' : 'regular expression validator failed'}
-#
-#	def comb(self, spectra):
-#		print spectra
-#	def get_ranges(self, spectrum):
-#		res = []
-#		#print self.BAND_LOWER_FREQ
-#		for rangedict in self.BAND_LOWER_FREQ:
-#			hf = rangedict["UpEnd"]
-#			freqsinrange = [k for k,v in spectrum.items() if (float(rangedict["LowEnd"]) <= float(k) <= float(rangedict["UpEnd"]))]
-#			combined = 0.0
-#			for val in freqsinrange:
-#				combined += (spectrum[val])
-#			#print combined
-#			#print freqsinrange
-#			combined = (combined/len(freqsinrange))
-#			res.append(combined)
-#		return res
+
 
 	def haversine(self, lon1, lat1, lon2, lat2):
 	    """
